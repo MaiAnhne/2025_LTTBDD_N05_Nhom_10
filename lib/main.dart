@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'about_us.dart';
+
 
 void main() {
   runApp(const LanguageFlashcardsApp());
