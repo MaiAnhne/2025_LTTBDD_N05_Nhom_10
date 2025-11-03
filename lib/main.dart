@@ -57,6 +57,62 @@ class VocabItem {
       };
 }
 
+// STORAGE HELPERS 
+
+class LocalStorage {
+  static Future<SharedPreferences> _prefs() => SharedPreferences.getInstance();
+  // Users stored as map email -> password (insecure but fine for offline demo)
+  static const _usersKey = 'users_map';
+  // current logged in email
+  static const _currentUserKey = 'current_user_email';
+
+  // Vocab per user: key: vocab_<email>
+  static String vocabKey(String email) => 'vocab_$email';
+
+  // users
+  static Future<Map<String, String>> loadUsers() async {
+    final prefs = await _prefs();
+    final s = prefs.getString(_usersKey);
+    if (s == null) return {};
+    final Map<String, dynamic> j = jsonDecode(s);
+    return j.map((k, v) => MapEntry(k, v.toString()));
+  }
+
+  static Future<void> saveUsers(Map<String, String> users) async {
+    final prefs = await _prefs();
+    await prefs.setString(_usersKey, jsonEncode(users));
+  }
+
+  static Future<void> setCurrentUser(String email) async {
+    final prefs = await _prefs();
+    await prefs.setString(_currentUserKey, email);
+  }
+
+  static Future<String?> getCurrentUser() async {
+    final prefs = await _prefs();
+    return prefs.getString(_currentUserKey);
+  }
+
+  static Future<void> logout() async {
+    final prefs = await _prefs();
+    await prefs.remove(_currentUserKey);
+  }
+
+  //vocab 
+  static Future<List<VocabItem>> loadVocab(String email) async {
+    final prefs = await _prefs();
+    final s = prefs.getString(vocabKey(email));
+    if (s == null) return [];
+    final List<dynamic> arr = jsonDecode(s);
+    return arr.map((e) => VocabItem.fromJson(e)).toList();
+  }
+  static Future<void> saveVocab(String email, List<VocabItem> list) async {
+    final prefs = await _prefs();
+    final j = list.map((e) => e.toJson()).toList();
+    await prefs.setString(vocabKey(email), jsonEncode(j));
+  }
+}
+
 // SPLASH / LOGIN ROUTE 
 
 class SplashOrLogin extends StatefulWidget {
