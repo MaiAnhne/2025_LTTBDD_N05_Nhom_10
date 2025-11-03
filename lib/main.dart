@@ -170,3 +170,179 @@ class _SplashOrLoginState extends State<SplashOrLogin> {
     );
   }
 }
+
+// AUTH SCREEN 
+
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
+  bool _isLogin = true;
+  final _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    _formKey.currentState!.save();
+    final users = await LocalStorage.loadUsers();
+
+    await Future.delayed(const Duration(milliseconds: 450)); // small delay
+
+    if (_isLogin) {
+      // login
+      if (users.containsKey(_email) && users[_email] == _password) {
+        await LocalStorage.setCurrentUser(_email);
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => HomeScreen(email: _email)),
+          );
+        }
+      } else {
+        setState(() {
+          _error = 'Email hoặc mật khẩu không đúng.';
+          _loading = false;
+        });
+      }
+    } else {
+      // register
+      if (users.containsKey(_email)) {
+        setState(() {
+          _error = 'Email đã được sử dụng.';
+          _loading = false;
+        });
+      } else {
+        users[_email] = _password;
+        await LocalStorage.saveUsers(users);
+        await LocalStorage.setCurrentUser(_email);
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => HomeScreen(email: _email)),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFf7fbff),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(_isLogin ? 'Ðăng nhập' : 'Ðăng ký',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                const Text('Offline account (demo)', style: TextStyle(color: Colors.black54)),
+                const SizedBox(height: 18),
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                  ),
+                Form(
+                  key: _formKey,
+                  child: Column(children: [
+                    TextFormField(
+                      initialValue: '',
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) =>
+                          (v == null || v.isEmpty || !v.contains('@')) ? 'Email không hợp lệ' : null,
+                      onSaved: (v) => _email = v!.trim(),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      initialValue: '',
+                      decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                      obscureText: true,
+                      validator: (v) =>
+                          (v == null || v.length < 4) ? 'Mật khẩu ít nhất 4 kí tự' : null,
+                      onSaved: (v) => _password = v!.trim(),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: _loading ? null : _submit,
+                        child: _loading
+                            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : Text(_isLogin ? 'Ðăng nhập' : 'Tạo tài khoản'),
+                      ),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: _loading
+                      ? null
+                      : () {
+                          setState(() {
+                            _isLogin = !_isLogin;
+                            _error = null;
+                          });
+                        },
+                  child: Text(_isLogin ? 'Chưa có tài khoản? Ðăng ký' : 'Ðã có tài khoản? Ðăng nhập'),
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: () {
+                    // quick demo account
+                    setState(() {
+                      _isLogin = true;
+                      _email = 'demo@example.com';
+                    });
+                    // we prepopulate demo user if not exist
+                    _ensureDemoUserAndLogin();
+                  },
+                  child: const Text('Dùng tài khoản demo'),
+                )
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _ensureDemoUserAndLogin() async {
+    final users = await LocalStorage.loadUsers();
+    if (!users.containsKey('demo@example.com')) {
+      users['demo@example.com'] = 'demo';
+      await LocalStorage.saveUsers(users);
+      // add some demo vocab for this user
+      final demoList = [
+        VocabItem(id: 'd1', word: 'Hello', meaning: 'Xin chào', lang: 'English'),
+        VocabItem(id: 'd2', word: 'Thank you', meaning: 'Cảm ơn', lang: 'English'),
+        VocabItem(id: 'd3', word: 'こんにちは', meaning: 'Xin chào', lang: 'Japanese'),
+        VocabItem(id: 'd4', word: 'またあした', meaning: 'Hẹn gặp lại ngày mai', lang: 'Japanese'),
+      ];
+      await LocalStorage.saveVocab('demo@example.com', demoList);
+    }
+    await LocalStorage.setCurrentUser('demo@example.com');
+    if (mounted) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen(email: 'demo@example.com')));
+    }
+  }
+}
