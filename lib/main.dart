@@ -869,3 +869,157 @@ class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
   }
 }
 
+
+// QUIZ SCREEN 
+
+class QuizScreen extends StatefulWidget {
+  final List<VocabItem> vocab;
+  const QuizScreen({required this.vocab, super.key});
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  late List<VocabItem> pool;
+  int _qIndex = 0;
+  int _score = 0;
+  List<String> _options = [];
+  String? _correctAnswer;
+
+  @override
+  void initState() {
+    super.initState();
+    pool = List<VocabItem>.from(widget.vocab);
+    pool.shuffle();
+    _prepareQuestion();
+  }
+
+  void _prepareQuestion() {
+    if (_qIndex >= pool.length) return;
+    final current = pool[_qIndex];
+    _correctAnswer = current.meaning;
+    final others = widget.vocab.where((e) => e.id != current.id).map((e) => e.meaning).toList();
+    others.shuffle();
+    final opts = <String>[];
+    opts.add(_correctAnswer!);
+    for (int i = 0; i < 3 && i < others.length; i++) {
+      opts.add(others[i]);
+    }
+    opts.shuffle();
+    setState(() => _options = opts);
+  }
+
+  void _select(String choice) {
+    final correct = choice == _correctAnswer;
+    if (correct) _score++;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(correct ? 'Ðúng!' : 'Sai'),
+        content: Text('${correct ? "Chính xác" : "Ðáp án đúng: $_correctAnswer"}'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _next();
+            },
+            child: const Text('Ti?p'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _next() {
+    if (_qIndex < pool.length - 1) {
+      setState(() {
+        _qIndex++;
+        _prepareQuestion();
+      });
+    } else {
+      // finish
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Kết thúc Quiz'),
+          content: Text('Ðiểm: $_score / ${pool.length}'),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text('Xong')),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    pool.shuffle();
+                    _qIndex = 0;
+                    _score = 0;
+                    _prepareQuestion();
+                  });
+                },
+                child: const Text('Ôn lại')),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (pool.isEmpty) {
+      return Scaffold(appBar: AppBar(title: const Text('Quiz')), body: const Center(child: Text('Không có câu hỏi')));
+    }
+    final cur = pool[_qIndex];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Quiz')),
+      body: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text('Câu ${_qIndex + 1} / ${pool.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text('Ðiểm: $_score'),
+                ]),
+                const SizedBox(height: 12),
+                Text(cur.word, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Chip(label: Text(cur.lang)),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 18),
+          ..._options.map((opt) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => _select(opt),
+                child: Text(opt),
+              ),
+            );
+          }).toList(),
+          const Spacer(),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Thoát'),
+          )
+        ]),
+      ),
+    );
+  }
+}
