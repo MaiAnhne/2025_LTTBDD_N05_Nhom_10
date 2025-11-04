@@ -673,3 +673,199 @@ class _HomeScreenState extends State<HomeScreen> {
     await _loadVocab();
   }
 }
+
+// MANAGE VOCAB SCREEN 
+
+class ManageVocabScreen extends StatefulWidget {
+  final String email;
+  const ManageVocabScreen({required this.email, super.key});
+
+  @override
+  State<ManageVocabScreen> createState() => _ManageVocabScreenState();
+}
+
+class _ManageVocabScreenState extends State<ManageVocabScreen> {
+  List<VocabItem> _list = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final l = await LocalStorage.loadVocab(widget.email);
+    await Future.delayed(const Duration(milliseconds: 150));
+    setState(() {
+      _list = l;
+      _loading = false;
+    });
+  }
+
+  Future<void> _save() async {
+    await LocalStorage.saveVocab(widget.email, _list);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quản lý từ vựng'),
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _list.isEmpty
+              ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Text('Chưa có từ nào.'),
+                  const SizedBox(height: 8),
+                  ElevatedButton(onPressed: () => _addNew(), child: const Text('Thêm từ mới'))
+                ]))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: _list.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, i) {
+                    final it = _list[i];
+                    return Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        leading: CircleAvatar(backgroundColor: it.lang == 'English' ? Colors.lightBlue : Colors.pinkAccent, child: Text(it.lang[0])),
+                        title: Text(it.word, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(it.meaning),
+                        trailing: Wrap(spacing: 8, children: [
+                          IconButton(icon: const Icon(Icons.edit), onPressed: () => _editItem(it)),
+                          IconButton(icon: Icon(it.learned ? Icons.check_circle : Icons.check_circle_outline, color: it.learned ? Colors.green : null),
+                              onPressed: () {
+                            setState(() {
+                              it.learned = !it.learned;
+                            });
+                            _save();
+                          }),
+                        ]),
+                      ),
+                    );
+                  },
+                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addNew,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _addNew() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEditVocabScreen(email: widget.email))).then((_) => _load());
+  }
+
+  void _editItem(VocabItem it) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEditVocabScreen(email: widget.email, editing: it))).then((_) => _load());
+  }
+}
+
+// =================== ADD / EDIT VOCAB SCREEN ===================
+
+class AddEditVocabScreen extends StatefulWidget {
+  final String email;
+  final VocabItem? editing;
+  const AddEditVocabScreen({required this.email, this.editing, super.key});
+
+  @override
+  State<AddEditVocabScreen> createState() => _AddEditVocabScreenState();
+}
+
+class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
+  final _formKey = GlobalKey<FormState>();
+  String _word = '';
+  String _meaning = '';
+  String _lang = 'English';
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editing != null) {
+      _word = widget.editing!.word;
+      _meaning = widget.editing!.meaning;
+      _lang = widget.editing!.lang;
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+    setState(() => _saving = true);
+    final list = await LocalStorage.loadVocab(widget.email);
+    if (widget.editing == null) {
+      final id = DateTime.now().millisecondsSinceEpoch.toString();
+      final item = VocabItem(id: id, word: _word, meaning: _meaning, lang: _lang);
+      list.add(item);
+    } else {
+      final idx = list.indexWhere((e) => e.id == widget.editing!.id);
+      if (idx >= 0) {
+        list[idx].word = _word;
+        list[idx].meaning = _meaning;
+        list[idx].lang = _lang;
+      }
+    }
+    await LocalStorage.saveVocab(widget.email, list);
+    setState(() => _saving = false);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEdit = widget.editing != null;
+    return Scaffold(
+      appBar: AppBar(title: Text(isEdit ? 'Sửa từ' : 'Thêm từ mới')),
+      body: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Card(
+          elevation: 6,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Form(
+              key: _formKey,
+              child: Column(children: [
+                TextFormField(
+                  initialValue: _word,
+                  decoration: const InputDecoration(labelText: 'Từ (word)'),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập từ' : null,
+                  onSaved: (v) => _word = v!.trim(),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  initialValue: _meaning,
+                  decoration: const InputDecoration(labelText: 'Nghĩa (meaning)'),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập nghĩa' : null,
+                  onSaved: (v) => _meaning = v!.trim(),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _lang,
+                  items: const [
+                    DropdownMenuItem(value: 'English', child: Text('English')),
+                    DropdownMenuItem(value: 'Japanese', child: Text('Japanese')),
+                  ],
+                  onChanged: (v) => setState(() => _lang = v!),
+                  decoration: const InputDecoration(labelText: 'Ngôn ngữ'),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : _save,
+                    child: _saving ? const CircularProgressIndicator() : Text(isEdit ? 'Lưu thay đổi' : 'Thêm từ'),
+                  ),
+                )
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
