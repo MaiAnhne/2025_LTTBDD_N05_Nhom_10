@@ -122,12 +122,12 @@ class AboutUs extends StatelessWidget {
       height: 100,
       decoration: BoxDecoration(
         // ignore: deprecated_member_use
-        color: neonAccent.withOpacity(0.2), // Nền nhạt
+        color: neonAccent.withOpacity(0.2), 
         shape: BoxShape.circle,
         border: Border.all(
           color: const Color.fromARGB(255, 101, 248, 226),
           width: 2,
-        ), // Viền neon
+        ), 
       ),
       child: const Icon(Icons.psychology_outlined, size: 50, color: neonAccent),
     );
@@ -148,7 +148,7 @@ class AboutUs extends StatelessWidget {
           143,
           230,
           244,
-        ), // Màu AppBar mạnh mẽ
+        ), 
         centerTitle: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
