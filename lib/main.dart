@@ -533,6 +533,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                         .then((_) => _loadVocab());
                   }),
+                  _featureCard(Icons.info_outline, 'Giới thiệu', () {
+                    Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => const AboutUs()));
+                  }),
                 ],
               ),
               const SizedBox(height: 22),
