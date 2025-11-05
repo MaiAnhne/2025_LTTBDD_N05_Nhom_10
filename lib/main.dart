@@ -869,6 +869,202 @@ class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
   }
 }
 
+// FLASHCARD SCREEN
+
+class FlashcardScreen extends StatefulWidget {
+  final List<VocabItem> vocab;
+  final VoidCallback? onUpdate;
+  const FlashcardScreen({required this.vocab, this.onUpdate, super.key});
+
+  @override
+  State<FlashcardScreen> createState() => _FlashcardScreenState();
+}
+
+class _FlashcardScreenState extends State<FlashcardScreen> {
+  late PageController _pageController;
+  late List<VocabItem> _cards;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cards = List<VocabItem>.from(widget.vocab);
+    _pageController = PageController();
+  }
+
+  void _markLearned() async {
+    final current = _cards[_index];
+    setState(() => current.learned = true);
+    // persist - note: we don't have email here, so we'll save by matching ID across local storage.
+    final email = await LocalStorage.getCurrentUser();
+    if (email != null) {
+      final list = await LocalStorage.loadVocab(email);
+      final idx = list.indexWhere((e) => e.id == current.id);
+      if (idx >= 0) list[idx].learned = true;
+      await LocalStorage.saveVocab(email, list);
+    }
+    widget.onUpdate?.call();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Đã đánh dấu "Đã nhớ"')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Flashcards')),
+      body: _cards.isEmpty
+          ? const Center(child: Text('Không có thẻ nào'))
+          : Column(
+            children: [
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _cards.length,
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemBuilder: (context, i) {
+                      final it = _cards[i];
+                      return Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Center(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(22),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: Chip(label: Text(it.lang)),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    it.word,
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    it.meaning,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 28),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: _markLearned,
+                                        icon: const Icon(Icons.check),
+                                        label: const Text('Đã nhớ'),
+                                        style: ElevatedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          // show details or flip? for simplicity show a dialog
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => AlertDialog(
+                                              title: Text(it.word),
+                                              content: Text(
+                                                'Nghĩa: ${it.meaning}\nNgôn ngữ: ${it.lang}',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: const Text('Đóng'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.info_outline),
+                                        label: const Text('Chi tiết'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${_index + 1} / ${_cards.length}'),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              final prev = max(0, _index - 1);
+                              _pageController.animateToPage(
+                                prev,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            icon: const Icon(Icons.chevron_left),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              final next = min(_cards.length - 1, _index + 1);
+                              _pageController.animateToPage(
+                                next,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            icon: const Icon(Icons.chevron_right),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
 
 // QUIZ SCREEN 
 
