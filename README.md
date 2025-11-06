@@ -38,7 +38,9 @@
 
 ## Class diagram
 
-- ![Image](Class.png)
+<p align="center">
+  <img src="Class.png" alt="Class Diagram" width="400"/>
+</p>
 
 ##  Cấu trúc dự án
 
