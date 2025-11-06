@@ -1328,16 +1328,44 @@ class FlashcardScreen extends StatefulWidget {
   State<FlashcardScreen> createState() => _FlashcardScreenState();
 }
 
-class _FlashcardScreenState extends State<FlashcardScreen> {
+class _FlashcardScreenState extends State<FlashcardScreen>
+    with TickerProviderStateMixin {
   late PageController _pageController;
   late List<VocabItem> _cards;
   int _index = 0;
+  bool _isFlipped = false;
+  late AnimationController _flipController;
+  late Animation<double> _flipAnimation;
 
   @override
   void initState() {
     super.initState();
     _cards = List<VocabItem>.from(widget.vocab);
     _pageController = PageController();
+
+    _flipController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _flipController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _flipController.dispose();
+    super.dispose();
+  }
+
+  void _flipCard() {
+    if (_flipController.isAnimating) return;
+    if (_flipController.isCompleted) {
+      _flipController.reverse();
+    } else {
+      _flipController.forward();
+    }
+    setState(() => _isFlipped = !_isFlipped);
   }
 
   void _markLearned() async {
@@ -1356,10 +1384,59 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     ).showSnackBar(const SnackBar(content: Text('Đã đánh dấu "Đã nhớ"')));
   }
 
+  void _nextCard() {
+    if (_index < _cards.length - 1) {
+      setState(() {
+        _index++;
+        _isFlipped = false;
+        _flipController.reset();
+      });
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _previousCard() {
+    if (_index > 0) {
+      setState(() {
+        _index--;
+        _isFlipped = false;
+        _flipController.reset();
+      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final it = _cards[_index];
+    final cardColor = it.lang == 'English'
+        ? Colors.lightBlue.shade50
+        : const Color.fromARGB(255, 232, 149, 177);
+    final accentColor = it.lang == 'English'
+        ? const Color.fromARGB(108, 114, 193, 232)
+        : const Color.fromARGB(255, 245, 168, 192);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Flashcards')),
+      appBar: AppBar(
+        title: const Text('Flashcards'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Text(
+                '${_index + 1} / ${_cards.length}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: _cards.isEmpty
           ? const Center(child: Text('Không có thẻ nào'))
           : Column(
@@ -1367,127 +1444,54 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
+                    onPageChanged: (i) {
+                      setState(() {
+                        _index = i;
+                        _isFlipped = false;
+                        _flipController.reset();
+                      });
+                    },
                     itemCount: _cards.length,
-                    onPageChanged: (i) => setState(() => _index = i),
                     itemBuilder: (context, i) {
-                      final it = _cards[i];
-                      final cardColor = it.lang == 'English'
-                          ? Colors.lightBlue.shade50
-                          : Colors.pinkAccent.shade100;
-                      final accentColor = it.lang == 'English'
-                          ? Colors.lightBlue
-                          : Colors.pinkAccent;
-
                       return Padding(
                         padding: const EdgeInsets.all(24),
-                        child: Center(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: cardColor,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                // ignore: deprecated_member_use
-                                color: accentColor.withOpacity(0.3),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  // ignore: deprecated_member_use
-                                  color: accentColor.withOpacity(0.15),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(28),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Align(
-                                    alignment: Alignment.topRight,
-                                    child: Chip(
-                                      label: Text(it.lang),
-                                      // ignore: deprecated_member_use
-                                      backgroundColor: accentColor.withOpacity(
-                                        0.8,
-                                      ),
-                                      labelStyle: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    it.word,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.bold,
-                                      color: accentColor.shade700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Divider(),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    it.meaning,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 30),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      ElevatedButton.icon(
-                                        onPressed: _markLearned,
-                                        icon: const Icon(Icons.check),
-                                        label: const Text('Đã nhớ'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
+                        child: GestureDetector(
+                          onTap: _flipCard,
+                          child: AnimatedBuilder(
+                            animation: _flipAnimation,
+                            builder: (context, child) {
+                              final isFront = _flipAnimation.value < 0.5;
+                              final rotateY = _flipAnimation.value * 3.14159;
+
+                              return Transform(
+                                transform: Matrix4.identity()
+                                  ..setEntry(3, 2, 0.001)
+                                  ..rotateY(rotateY),
+                                alignment: Alignment.center,
+                                child: isFront
+                                    ? _buildFrontSide(
+                                        it,
+                                        cardColor,
+                                        accentColor,
+                                      )
+                                    : Transform(
+                                        transform: Matrix4.rotationY(3.14159),
+                                        alignment: Alignment.center,
+                                        child: _buildBackSide(
+                                          it,
+                                          cardColor,
+                                          accentColor,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => AlertDialog(
-                                              title: Text(it.word),
-                                              content: Text(
-                                                'Nghĩa: ${it.meaning}\nNgôn ngữ: ${it.lang}',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(context),
-                                                  child: const Text('Đóng'),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.info_outline),
-                                        label: const Text('Chi tiết'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ),
                       );
                     },
                   ),
                 ),
+                // Nút điều khiển
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
@@ -1496,32 +1500,24 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${_index + 1} / ${_cards.length}'),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              final prev = max(0, _index - 1);
-                              _pageController.animateToPage(
-                                prev,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            icon: const Icon(Icons.chevron_left),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              final next = min(_cards.length - 1, _index + 1);
-                              _pageController.animateToPage(
-                                next,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            icon: const Icon(Icons.chevron_right),
-                          ),
-                        ],
+                      IconButton(
+                        onPressed: _previousCard,
+                        icon: const Icon(Icons.chevron_left),
+                        iconSize: 32,
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _isFlipped ? _markLearned : null,
+                        icon: const Icon(Icons.check),
+                        label: const Text('Đã nhớ'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _nextCard,
+                        icon: const Icon(Icons.chevron_right),
+                        iconSize: 32,
                       ),
                     ],
                   ),
@@ -1530,10 +1526,116 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
             ),
     );
   }
-}
 
-extension on ColorSwatch<int> {
-  Color? get shade700 => null;
+  Widget _buildFrontSide(VocabItem it, Color cardColor, Color accentColor) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        // ignore: deprecated_member_use
+        border: Border.all(color: accentColor.withOpacity(0.3), width: 2),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: accentColor.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Chip(
+              label: Text(it.lang),
+              // ignore: deprecated_member_use
+              backgroundColor: accentColor.withOpacity(0.8),
+              labelStyle: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              it.word,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 38,
+                fontWeight: FontWeight.bold,
+                color: accentColor.shade700,
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Icon(
+              Icons.touch_app,
+              size: 48,
+              color: Color.fromARGB(136, 219, 175, 235),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Chạm để lật thẻ',
+              style: TextStyle(color: Colors.black54, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackSide(VocabItem it, Color cardColor, Color accentColor) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        // ignore: deprecated_member_use
+        border: Border.all(color: accentColor.withOpacity(0.3), width: 2),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: accentColor.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Chip(
+              label: Text(it.lang),
+              // ignore: deprecated_member_use
+              backgroundColor: accentColor.withOpacity(0.8),
+              labelStyle: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              it.meaning,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Icon(
+              Icons.flip,
+              size: 48,
+              color: Color.fromARGB(137, 216, 199, 199),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Chạm để lật lại',
+              style: TextStyle(color: Colors.black54, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // QUIZ SCREEN 
