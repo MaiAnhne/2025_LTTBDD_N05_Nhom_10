@@ -1565,12 +1565,17 @@ class _QuizScreenState extends State<QuizScreen> {
     if (_qIndex >= pool.length) return;
     final current = pool[_qIndex];
     _correctAnswer = current.meaning;
-    final others = widget.vocab.where((e) => e.id != current.id).map((e) => e.meaning).toList();
+    final others = widget.vocab
+        .where((e) => e.id != current.id)
+        .map((e) => e.meaning)
+        .toList();
     others.shuffle();
     final opts = <String>[];
     opts.add(_correctAnswer!);
     for (int i = 0; i < 3 && i < others.length; i++) {
-      opts.add(others[i]);
+      if (others[i] != _correctAnswer) {
+        opts.add(others[i]);
+      }
     }
     opts.shuffle();
     setState(() => _options = opts);
@@ -1583,15 +1588,17 @@ class _QuizScreenState extends State<QuizScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(correct ? 'Ðúng!' : 'Sai'),
-        content: Text('${correct ? "Chính xác" : "Ðáp án đúng: $_correctAnswer"}'),
+        content: Text(
+          '${correct ? "Chính xác" : "Ðáp án đúng: $_correctAnswer"}',
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _next();
             },
-            child: const Text('Ti?p'),
-          )
+            child: const Text('Tiếp'),
+          ),
         ],
       ),
     );
@@ -1613,22 +1620,24 @@ class _QuizScreenState extends State<QuizScreen> {
           content: Text('Ðiểm: $_score / ${pool.length}'),
           actions: [
             TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: const Text('Xong')),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text('Xong'),
+            ),
             TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    pool.shuffle();
-                    _qIndex = 0;
-                    _score = 0;
-                    _prepareQuestion();
-                  });
-                },
-                child: const Text('Ôn lại')),
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  pool.shuffle();
+                  _qIndex = 0;
+                  _score = 0;
+                  _prepareQuestion();
+                });
+              },
+              child: const Text('Ôn lại'),
+            ),
           ],
         ),
       );
@@ -1638,53 +1647,72 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     if (pool.isEmpty) {
-      return Scaffold(appBar: AppBar(title: const Text('Quiz')), body: const Center(child: Text('Không có câu hỏi')));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Quiz')),
+        body: const Center(child: Text('Không có câu hỏi')),
+      );
     }
     final cur = pool[_qIndex];
     return Scaffold(
       appBar: AppBar(title: const Text('Quiz')),
       body: Padding(
         padding: const EdgeInsets.all(18),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(children: [
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text('Câu ${_qIndex + 1} / ${pool.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Ðiểm: $_score'),
-                ]),
-                const SizedBox(height: 12),
-                Text(cur.word, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                Chip(label: Text(cur.lang)),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 18),
-          ..._options.map((opt) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () => _select(opt),
-                child: Text(opt),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            );
-          }).toList(),
-          const Spacer(),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Thoát'),
-          )
-        ]),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Câu ${_qIndex + 1} / ${pool.length}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text('Ðiểm: $_score'),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      cur.word,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Chip(label: Text(cur.lang)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            ..._options.map((opt) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: ElevatedButton(
+                  onPressed: () => _select(opt),
+                  child: Text(opt),
+                ),
+              );
+            }).toList(),
+            const Spacer(),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Thoát'),
+            ),
+          ],
+        ),
       ),
     );
   }
