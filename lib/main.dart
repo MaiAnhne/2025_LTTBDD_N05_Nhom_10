@@ -525,6 +525,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(
         context,
+      // ignore: deprecated_member_use
       ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
       appBar: AppBar(
         title: const Text('Language Flashcards'),
@@ -1179,7 +1180,7 @@ class _ManageVocabScreenState extends State<ManageVocabScreen> {
   }
 }
 
-// =================== ADD / EDIT VOCAB SCREEN ===================
+// ADD / EDIT VOCAB SCREEN
 
 class AddEditVocabScreen extends StatefulWidget {
   final String email;
