@@ -1343,7 +1343,6 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   void _markLearned() async {
     final current = _cards[_index];
     setState(() => current.learned = true);
-    // persist - note: we don't have email here, so we'll save by matching ID across local storage.
     final email = await LocalStorage.getCurrentUser();
     if (email != null) {
       final list = await LocalStorage.loadVocab(email);
@@ -1364,7 +1363,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
       body: _cards.isEmpty
           ? const Center(child: Text('Không có thẻ nào'))
           : Column(
-            children: [
+              children: [
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -1372,50 +1371,77 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     onPageChanged: (i) => setState(() => _index = i),
                     itemBuilder: (context, i) {
                       final it = _cards[i];
+                      final cardColor = it.lang == 'English'
+                          ? Colors.lightBlue.shade50
+                          : Colors.pinkAccent.shade100;
+                      final accentColor = it.lang == 'English'
+                          ? Colors.lightBlue
+                          : Colors.pinkAccent;
+
                       return Padding(
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(24),
                         child: Center(
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(18),
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                // ignore: deprecated_member_use
+                                color: accentColor.withOpacity(0.3),
+                                width: 2,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 8),
+                                  // ignore: deprecated_member_use
+                                  color: accentColor.withOpacity(0.15),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
                                 ),
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(22),
+                              padding: const EdgeInsets.all(28),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Align(
                                     alignment: Alignment.topRight,
-                                    child: Chip(label: Text(it.lang)),
+                                    child: Chip(
+                                      label: Text(it.lang),
+                                      // ignore: deprecated_member_use
+                                      backgroundColor: accentColor.withOpacity(
+                                        0.8,
+                                      ),
+                                      labelStyle: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     it.word,
-                                    style: const TextStyle(
-                                      fontSize: 32,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 36,
                                       fontWeight: FontWeight.bold,
+                                      color: accentColor.shade700,
                                     ),
                                   ),
                                   const SizedBox(height: 16),
+                                  const Divider(),
+                                  const SizedBox(height: 16),
                                   Text(
                                     it.meaning,
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.black54,
+                                      fontSize: 22,
+                                      color: Colors.black87,
                                     ),
                                   ),
-                                  const SizedBox(height: 28),
+                                  const SizedBox(height: 30),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -1424,21 +1450,13 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                                         icon: const Icon(Icons.check),
                                         label: const Text('Đã nhớ'),
                                         style: ElevatedButton.styleFrom(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.white,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       OutlinedButton.icon(
                                         onPressed: () {
-                                          // show details or flip? for simplicity show a dialog
                                           showDialog(
                                             context: context,
                                             builder: (_) => AlertDialog(
@@ -1512,6 +1530,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
             ),
     );
   }
+}
+
+extension on ColorSwatch<int> {
+  Color? get shade700 => null;
 }
 
 // QUIZ SCREEN 
