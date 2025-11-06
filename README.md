@@ -1,4 +1,4 @@
-# Language Flashcards App 
+# Language Flashcards
 
 Ứng dụng **Language Flashcards** là một công cụ học từ vựng ngoại ngữ tiện lợi và trực quan, được phát triển hoàn toàn trên nền tảng **Flutter**. Mục tiêu chính là cung cấp một giải pháp học tập cá nhân hóa, giúp người dùng lưu trữ, ôn tập và kiểm tra kiến thức từ vựng (ví dụ: Tiếng Anh và Tiếng Nhật) một cách hiệu quả và hoàn toàn ngoại tuyến.
 
@@ -39,7 +39,7 @@
 ## Class diagram
 
 <p align="center">
-  <img src="Class.png" alt="Class Diagram" width="600"/>
+  <img src="Class.png" alt="Class Diagram" width="700"/>
 </p>
 
 ##  Cấu trúc dự án
@@ -82,4 +82,4 @@
     * Chuyển từ `shared_preferences` sang cơ sở dữ liệu cục bộ mạnh mẽ hơn như **SQLite/Hive/Isar** để xử lý lượng từ vựng lớn hơn và các truy vấn phức tạp hơn.
     * Thêm chức năng **Nhập/Xuất file CSV** để người dùng dễ dàng di chuyển từ vựng.
 3.  **Cải thiện Thuật toán Ôn tập:**
-    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập.
+    * Áp dụng thuật toán lặp lại ngắt quãng để tối ưu hóa thời điểm ôn tập.
