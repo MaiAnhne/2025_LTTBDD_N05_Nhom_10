@@ -32,7 +32,9 @@
 
 ## Sơ đồ Use case
 
-- ![Image](Usecase.jpg)
+<p align="center">
+  <img src="Usecase.jpg" alt="Use Case Diagram" width="400"/>
+</p>
 
 ## Class diagram
 
