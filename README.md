@@ -32,11 +32,11 @@
 
 ## Sơ đồ Use case
 
-![Image]("Use case.png")
+- ![Image](Usecase.jpg)
 
 ## Class diagram
 
-- - ![Image]()
+- ![Image]()
 
 ##  Cấu trúc dự án
 
