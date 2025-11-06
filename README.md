@@ -39,7 +39,7 @@
 ## Class diagram
 
 <p align="center">
-  <img src="Class.png" alt="Class Diagram" width="400"/>
+  <img src="Class.png" alt="Class Diagram" width="600"/>
 </p>
 
 ##  Cấu trúc dự án
