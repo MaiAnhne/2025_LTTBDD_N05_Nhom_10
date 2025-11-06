@@ -41,46 +41,7 @@
     * Chuyển từ `shared_preferences` sang cơ sở dữ liệu cục bộ mạnh mẽ hơn như **SQLite/Hive/Isar** để xử lý lượng từ vựng lớn hơn và các truy vấn phức tạp hơn.
     * Thêm chức năng **Nhập/Xuất file CSV** để người dùng dễ dàng di chuyển từ vựng.
 3.  **Cải thiện Thuật toán Ôn tập:**
-    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập dựa trên mức độ đã học của người dùng, giúp cải thiện hiệu suất ghi nhớ.
-4.  **Tính năng Cộng đồng (Tùy chọn):**
-    * Thêm chức năng đồng bộ hóa đám mây (Cloud Sync) bằng **Firebase** hoặc **Supabase** để người dùng không mất dữ liệu khi đổi thiết bị.
-
----
-
-## Authentication & Tài khoản Demo
-
-Quá trình xác thực được quản lý trong `AuthScreen`.
-
-### 1. Đăng ký & Đăng nhập
-
-* Ứng dụng hoạt động với tài khoản offline (không kết nối server).
-* **Validation:** Email phải hợp lệ (chứa `@`) và Mật khẩu phải có độ dài tối thiểu là 4 ký tự.
-* Người dùng có thể chuyển đổi giữa chế độ **Đăng nhập** và **Đăng ký** nếu chưa có tài khoản.
-
-### 2. Sử dụng Tài khoản Demo
-
-Người dùng có thể nhấn nút **"Dùng tài khoản demo"** để truy cập ứng dụng ngay lập tức. Hệ thống sẽ tự động:
-
-* Tự động thêm **4 từ vựng mẫu** (2 tiếng Anh, 2 tiếng Nhật) để người dùng có thể trải nghiệm các chức năng Quiz và Flashcards ngay lập tức.
-
-## 🎨 Thiết kế và Cấu trúc UI (UI/UX)
-
-Ứng dụng được thiết kế theo phong cách Material 3. Các thẻ tiến độ được phân biệt rõ ràng bằng màu sắc, phản ánh ngôn ngữ đang học:
-
-| Thành phần | Mục đích | Màu sắc |
-| :--- | :--- | :--- |
-| **Header Card** | Chứa tổng từ vựng và email người dùng | Xanh Dương Nhạt (Sử dụng `primaryContainer`) |
-| **Progress Bar (English)** | Thanh tiến độ học tiếng Anh | Xanh Dương Nhạt (`Colors.lightBlue`) |
-| **Progress Bar (Japanese)** | Thanh tiến độ học tiếng Nhật | Hồng (`Colors.pinkAccent`) |
-| **FAB** | Nút "Thêm từ" | Màu chủ đạo (Xanh Dương Nhạt) |
-
-## Sơ đồ Thiết kế Hệ thống (System Design)
-
-### 1. Sơ đồ Class Diagram
-
-
-### 2.Sơ đồ Use Case (Mô tả chi tiết)
-
+    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập dựa trpnj
 
 ##  Cấu trúc dự án
 
