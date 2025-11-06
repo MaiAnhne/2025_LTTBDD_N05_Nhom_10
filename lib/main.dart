@@ -19,7 +19,33 @@ class LanguageFlashcardsApp extends StatelessWidget {
     return MaterialApp(
       title: 'Language Flashcards',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.lightGreen,
+          accentColor: Colors.pinkAccent,
+        ).copyWith(secondary: Colors.pinkAccent),
+        useMaterial3: true,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.lightBlue, 
+          foregroundColor: Colors.white, 
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 6,
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
       home: const SplashOrLogin(),
     );
   }
@@ -57,6 +83,15 @@ class VocabItem {
         'lang': lang,
         'learned': learned,
       };
+}
+
+class LanguageProgress {
+  final int total;
+  final int learned;
+  final double percent;
+
+  LanguageProgress(this.total, this.learned)
+    : percent = total > 0 ? learned / total : 0.0;
 }
 
 // STORAGE HELPERS 
@@ -158,16 +193,29 @@ class _SplashOrLoginState extends State<SplashOrLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFeef6ff),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       body: Center(
-        child: Column(mainAxisSize: MainAxisSize.min, children: const [
-          Icon(Icons.flash_on_rounded, color: Colors.blueAccent, size: 80),
-          SizedBox(height: 12),
-          Text('Language Flashcards',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          SizedBox(height: 6),
-          Text('Offline demo', style: TextStyle(color: Colors.black54)),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.flash_on_rounded,
+              color: Theme.of(context).colorScheme.primary,
+              size: 80,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Language Flashcards',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text('Offline demo', style: TextStyle(color: Colors.black54)),
+          ],
+        ),
       ),
     );
   }
@@ -199,7 +247,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _formKey.currentState!.save();
     final users = await LocalStorage.loadUsers();
 
-    await Future.delayed(const Duration(milliseconds: 450)); // small delay
+    await Future.delayed(const Duration(milliseconds: 450)); 
 
     if (_isLogin) {
       // login
@@ -239,88 +287,120 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFf7fbff),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
           child: Card(
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Text(_isLogin ? 'Ðăng nhập' : 'Ðăng ký',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                const Text('Offline account (demo)', style: TextStyle(color: Colors.black54)),
-                const SizedBox(height: 18),
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _isLogin ? 'Ðăng nhập' : 'Ðăng ký',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                Form(
-                  key: _formKey,
-                  child: Column(children: [
-                    TextFormField(
-                      initialValue: '',
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) =>
-                          (v == null || v.isEmpty || !v.contains('@')) ? 'Email không hợp lệ' : null,
-                      onSaved: (v) => _email = v!.trim(),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      initialValue: '',
-                      decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                      obscureText: true,
-                      validator: (v) =>
-                          (v == null || v.length < 4) ? 'Mật khẩu ít nhất 4 kí tự' : null,
-                      onSaved: (v) => _password = v!.trim(),
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: _loading ? null : _submit,
-                        child: _loading
-                            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : Text(_isLogin ? 'Ðăng nhập' : 'Tạo tài khoản'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Offline account (demo)',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 18),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
-                  ]),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: _loading
-                      ? null
-                      : () {
-                          setState(() {
-                            _isLogin = !_isLogin;
-                            _error = null;
-                          });
-                        },
-                  child: Text(_isLogin ? 'Chưa có tài khoản? Ðăng ký' : 'Ðã có tài khoản? Ðăng nhập'),
-                ),
-                const SizedBox(height: 6),
-                TextButton(
-                  onPressed: () {
-                    // quick demo account
-                    setState(() {
-                      _isLogin = true;
-                      _email = 'demo@example.com';
-                    });
-                    // we prepopulate demo user if not exist
-                    _ensureDemoUserAndLogin();
-                  },
-                  child: const Text('Dùng tài khoản demo'),
-                )
-              ]),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          initialValue: '',
+                          decoration: const InputDecoration(labelText: 'Email'),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) =>
+                              (v == null || v.isEmpty || !v.contains('@'))
+                              ? 'Email không hợp lệ'
+                              : null,
+                          onSaved: (v) => _email = v!.trim(),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          initialValue: '',
+                          decoration: const InputDecoration(
+                            labelText: 'Mật khẩu',
+                          ),
+                          obscureText: true,
+                          validator: (v) => (v == null || v.length < 4)
+                              ? 'Mật khẩu ít nhất 4 kí tự'
+                              : null,
+                          onSaved: (v) => _password = v!.trim(),
+                        ),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _loading ? null : _submit,
+                            child: _loading
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    _isLogin ? 'Ðăng nhập' : 'Tạo tài khoản',
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _loading
+                        ? null
+                        : () {
+                            setState(() {
+                              _isLogin = !_isLogin;
+                              _error = null;
+                            });
+                          },
+                    child: Text(
+                      _isLogin
+                          ? 'Chưa có tài khoản? Ðăng ký'
+                          : 'Ðã có tài khoản? Ðăng nhập',
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextButton(
+                    onPressed: () {
+                      // quick demo account
+                      setState(() {
+                        _isLogin = true;
+                        _email = 'demo@example.com';
+                      });
+                      _ensureDemoUserAndLogin();
+                    },
+                    child: const Text('Dùng tài khoản demo'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -333,18 +413,42 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!users.containsKey('demo@example.com')) {
       users['demo@example.com'] = 'demo';
       await LocalStorage.saveUsers(users);
-      // add some demo vocab for this user
+      // add demo vocab
       final demoList = [
-        VocabItem(id: 'd1', word: 'Hello', meaning: 'Xin chào', lang: 'English'),
-        VocabItem(id: 'd2', word: 'Thank you', meaning: 'Cảm ơn', lang: 'English'),
-        VocabItem(id: 'd3', word: 'こんにちは', meaning: 'Xin chào', lang: 'Japanese'),
-        VocabItem(id: 'd4', word: 'またあした', meaning: 'Hẹn gặp lại ngày mai', lang: 'Japanese'),
+        VocabItem(
+          id: 'd1',
+          word: 'Hello',
+          meaning: 'Xin chào',
+          lang: 'English',
+        ),
+        VocabItem(
+          id: 'd2',
+          word: 'Thank you',
+          meaning: 'Cảm ơn',
+          lang: 'English',
+        ),
+        VocabItem(
+          id: 'd3',
+          word: 'こんにちは',
+          meaning: 'Xin chào',
+          lang: 'Japanese',
+        ),
+        VocabItem(
+          id: 'd4',
+          word: 'またあした',
+          meaning: 'Hẹn gặp lại ngày mai',
+          lang: 'Japanese',
+        ),
       ];
       await LocalStorage.saveVocab('demo@example.com', demoList);
     }
     await LocalStorage.setCurrentUser('demo@example.com');
     if (mounted) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen(email: 'demo@example.com')));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(email: 'demo@example.com'),
+        ),
+      );
     }
   }
 }
@@ -362,6 +466,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<VocabItem> _vocab = [];
   bool _loading = true;
+  String _selectedLang = 'English';
 
   @override
   void initState() {
@@ -379,10 +484,26 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  double _progressPercent() {
-    if (_vocab.isEmpty) return 0;
-    final learned = _vocab.where((e) => e.learned).length;
-    return learned / _vocab.length;
+  //Hàm tính tiến độ riêng
+  Map<String, LanguageProgress> _getProgress() {
+    final englishVocab = _vocab.where((e) => e.lang == 'English');
+    final japaneseVocab = _vocab.where((e) => e.lang == 'Japanese');
+
+    final progress = {
+      'English': LanguageProgress(
+        englishVocab.length,
+        englishVocab.where((e) => e.learned).length,
+      ),
+      'Japanese': LanguageProgress(
+        japaneseVocab.length,
+        japaneseVocab.where((e) => e.learned).length,
+      ),
+    };
+    return progress;
+  }
+
+  List<VocabItem> _filteredVocab() {
+    return _vocab.where((e) => e.lang == _selectedLang).toList();
   }
 
   Future<void> _logout() async {
@@ -397,9 +518,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final progress = _progressPercent();
+    final progressMap = _getProgress();
+    final currentVocab = _filteredVocab();
+    final currentEmail = widget.email;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFeef7ff),
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
       appBar: AppBar(
         title: const Text('Language Flashcards'),
         actions: [
@@ -418,68 +544,114 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    child: Text(widget.email[0].toUpperCase()),
-                    backgroundColor: Colors.blueAccent,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.email,
+              Card(
+                color: Colors.white,
+                elevation: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        child: Text(
+                          widget.email[0].toUpperCase(),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tổng từ: ${_vocab.length} · Đã nhớ: ${_vocab.where((e) => e.learned).length}',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Tiến độ học',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '${(progress * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
                       ),
-                      const SizedBox(height: 10),
-                      LinearProgressIndicator(value: progress, minHeight: 10),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Xin chào, ${widget.email.split('@').first}!',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            Text(
+                              'Tổng từ vựng: ${_vocab.length} mục',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18, 
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 18),
               Text(
-                'Chức năng',
+                'Tiến độ học tập (theo ngôn ngữ)',
                 style: TextStyle(
                   fontSize: 18,
-                  color: Colors.blueGrey.shade700,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              //Hiển thị 2 Progress Card riêng biệt
+              _buildProgressCard(
+                'English',
+                progressMap['English']!,
+                Colors.lightBlue,
+              ),
+              const SizedBox(height: 12),
+              _buildProgressCard(
+                'Japanese',
+                progressMap['Japanese']!,
+                Colors.pinkAccent,
+              ),
+
+              const SizedBox(height: 20),
+              // KHUNG CHỌN NGÔN NGỮ
+              Text(
+                'Ngôn ngữ làm việc hiện tại',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: ['English', 'Japanese']
+                    .map(
+                      (lang) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ChoiceChip(
+                          label: Text(lang),
+                          selected: _selectedLang == lang,
+                          selectedColor: Theme.of(
+                            context,
+                          ).colorScheme.secondaryContainer,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _selectedLang = lang;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Chức năng (${_selectedLang})',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey.shade700,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -489,71 +661,79 @@ class _HomeScreenState extends State<HomeScreen> {
                 runSpacing: 12,
                 children: [
                   _featureCard(Icons.auto_stories, 'Học (Flashcards)', () {
-                    if (_vocab.isEmpty) {
-                      _showSnack('Chưa có từ nào. Vui lòng thêm từ trước.');
+                    if (currentVocab.isEmpty) {
+                      _showSnack(
+                        'Chưa có từ ${_selectedLang}. Vui lòng thêm từ trước.',
+                      );
                       return;
                     }
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => FlashcardScreen(
-                          vocab: _vocab,
+                          vocab: currentVocab,
                           onUpdate: _onVocabUpdated,
                         ),
                       ),
                     );
-                  }),
-                  _featureCard(Icons.list_alt, 'Quản lý từ', () {
-                    Navigator.of(context)
-                        .push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ManageVocabScreen(email: widget.email),
-                          ),
-                        )
-                        .then((_) => _loadVocab());
-                  }),
+                  }, Colors.lightBlue),
                   _featureCard(Icons.quiz, 'Làm quiz', () {
-                    if (_vocab.length < 2) {
-                      _showSnack('Cần ít nhất 2 từ để làm quiz.');
+                    if (currentVocab.length < 2) {
+                      _showSnack(
+                        'Cần ít nhất 2 từ ${_selectedLang} để làm quiz.',
+                      );
                       return;
                     }
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => QuizScreen(vocab: _vocab),
+                        builder: (_) => QuizScreen(vocab: currentVocab),
                       ),
                     );
-                  }),
+                  }, Colors.pinkAccent),
+                  _featureCard(Icons.list_alt, 'Quản lý từ', () {
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                            builder: (_) => ManageVocabScreen(
+                              email: currentEmail,
+                              initialLang: _selectedLang,
+                            ),
+                          ),
+                        )
+                        .then((_) => _loadVocab());
+                  }, Colors.green),
                   _featureCard(Icons.add_task, 'Thêm từ mới', () {
                     Navigator.of(context)
                         .push(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                AddEditVocabScreen(email: widget.email),
+                            builder: (_) => AddEditVocabScreen(
+                              email: widget.email,
+                              initialLang: _selectedLang,
+                            ),
                           ),
                         )
                         .then((_) => _loadVocab());
-                  }),
+                  }, Colors.orange),
                   _featureCard(Icons.info_outline, 'Giới thiệu', () {
                     Navigator.of(
                       context,
                     ).push(MaterialPageRoute(builder: (_) => const AboutUs()));
-                  }),
+                  }, Colors.grey),
                 ],
               ),
               const SizedBox(height: 22),
-              const Text(
-                'Danh sách từ (một vài mục)',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              Text(
+                'Danh sách từ ${_selectedLang} (sẵn)',
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               if (_loading)
                 const Center(child: CircularProgressIndicator())
-              else if (_vocab.isEmpty)
-                const Center(
+              else if (currentVocab.isEmpty)
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     child: Text(
-                      'Bạn chưa có từ nào. Nhấn "Thêm từ mới" để bắt đầu.',
+                      'Bạn chưa có từ ${_selectedLang} nào. Nhấn "Thêm từ mới" để bắt đầu.',
                     ),
                   ),
                 )
@@ -561,10 +741,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _vocab.length,
+                  itemCount: min(5, currentVocab.length), // Giới hạn 5 mục
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, idx) {
-                    final item = _vocab[idx];
+                    final item = currentVocab[idx];
                     return Dismissible(
                       key: Key(item.id),
                       direction: DismissDirection.endToStart,
@@ -578,10 +758,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(Icons.delete, color: Colors.white),
                       ),
                       onDismissed: (_) async {
-                        _vocab.removeAt(idx);
-                        await LocalStorage.saveVocab(widget.email, _vocab);
-                        setState(() {});
-                        _showSnack('Đã xóa từ');
+                        // Xóa từ danh sách gốc
+                        final originalIdx = _vocab.indexWhere(
+                          (e) => e.id == item.id,
+                        );
+                        if (originalIdx >= 0) {
+                          _vocab.removeAt(originalIdx);
+                          await LocalStorage.saveVocab(widget.email, _vocab);
+                          setState(() {});
+                          _showSnack('Đã xóa từ');
+                        }
                       },
                       child: ListTile(
                         tileColor: Colors.white,
@@ -628,31 +814,105 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.of(context)
               .push(
                 MaterialPageRoute(
-                  builder: (_) => AddEditVocabScreen(email: widget.email),
+                  builder: (_) => AddEditVocabScreen(
+                    email: widget.email,
+                    initialLang: _selectedLang,
+                  ),
                 ),
               )
               .then((_) => _loadVocab());
         },
         icon: const Icon(Icons.add),
-        label: const Text('Thêm từ'),
+        label: Text('Thêm từ ${_selectedLang}'),
       ),
     );
   }
 
-  Widget _featureCard(IconData icon, String title, VoidCallback onTap) {
+  //Widget Progress Card riêng cho từng ngôn ngữ
+  Widget _buildProgressCard(
+    String lang,
+    LanguageProgress progress,
+    Color langColor,
+  ) {
+    return Card(
+      elevation: 4,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        // ignore: deprecated_member_use
+        side: BorderSide(color: langColor.withOpacity(0.3), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tiến độ ${lang}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: langColor.shade700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: LinearProgressIndicator(
+                value: progress.percent,
+                minHeight: 10,
+                // ignore: deprecated_member_use
+                backgroundColor: langColor.withOpacity(0.15),
+                color: langColor,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Đã học: ${progress.learned} / ${progress.total} từ',
+                  style: const TextStyle(fontSize: 13, color: Colors.black54),
+                ),
+                Text(
+                  '${(progress.percent * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: langColor.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  //Widget Feature Card
+  Widget _featureCard(
+    IconData icon,
+    String title,
+    VoidCallback onTap,
+    Color iconColor,
+  ) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         width: 160,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
+          // ignore: deprecated_member_use
+          border: Border.all(color: iconColor.withOpacity(0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+              // ignore: deprecated_member_use
+              color: iconColor.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -660,8 +920,9 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              backgroundColor: Colors.blue.shade50,
-              child: Icon(icon, color: Colors.blueAccent),
+              // ignore: deprecated_member_use
+              backgroundColor: iconColor.withOpacity(0.15),
+              child: Icon(icon, color: iconColor),
             ),
             const SizedBox(height: 12),
             Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -679,11 +940,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+extension on Color {
+  Color? get shade700 => null;
+}
+
+
 // MANAGE VOCAB SCREEN 
 
 class ManageVocabScreen extends StatefulWidget {
   final String email;
-  const ManageVocabScreen({required this.email, super.key});
+  final String initialLang;
+  const ManageVocabScreen({
+    required this.email,
+    this.initialLang = 'English',
+    super.key,
+  });
 
   @override
   State<ManageVocabScreen> createState() => _ManageVocabScreenState();
@@ -692,10 +963,12 @@ class ManageVocabScreen extends StatefulWidget {
 class _ManageVocabScreenState extends State<ManageVocabScreen> {
   List<VocabItem> _list = [];
   bool _loading = true;
+  String _selectedLang = 'English';
 
   @override
   void initState() {
     super.initState();
+    _selectedLang = widget.initialLang;
     _load();
   }
 
@@ -713,46 +986,167 @@ class _ManageVocabScreenState extends State<ManageVocabScreen> {
     await LocalStorage.saveVocab(widget.email, _list);
   }
 
+  List<VocabItem> _filteredList() {
+    return _list.where((e) => e.lang == _selectedLang).toList();
+  }
+
+  Future<void> _deleteItem(VocabItem item) async {
+    final idx = _list.indexWhere((e) => e.id == item.id);
+    if (idx >= 0) {
+      setState(() {
+        _list.removeAt(idx);
+      });
+      await _save();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Đã xóa từ')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentList = _filteredList();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quản lý từ vựng'),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _list.isEmpty
-              ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Text('Chưa có từ nào.'),
-                  const SizedBox(height: 8),
-                  ElevatedButton(onPressed: () => _addNew(), child: const Text('Thêm từ mới'))
-                ]))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: _list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) {
-                    final it = _list[i];
-                    return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        leading: CircleAvatar(backgroundColor: it.lang == 'English' ? Colors.lightBlue : Colors.pinkAccent, child: Text(it.lang[0])),
-                        title: Text(it.word, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(it.meaning),
-                        trailing: Wrap(spacing: 8, children: [
-                          IconButton(icon: const Icon(Icons.edit), onPressed: () => _editItem(it)),
-                          IconButton(icon: Icon(it.learned ? Icons.check_circle : Icons.check_circle_outline, color: it.learned ? Colors.green : null),
-                              onPressed: () {
+      backgroundColor: Theme.of(
+        context,
+        // ignore: deprecated_member_use
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
+      appBar: AppBar(title: const Text('Quản lý từ vựng')),
+      body: Column(
+        children: [
+          // KHUNG CHỌN NGÔN NGỮ
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: ['English', 'Japanese']
+                  .map(
+                    (lang) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ChoiceChip(
+                        label: Text(lang),
+                        selected: _selectedLang == lang,
+                        selectedColor: Theme.of(
+                          context,
+                        ).colorScheme.secondaryContainer,
+                        onSelected: (selected) {
+                          if (selected) {
                             setState(() {
-                              it.learned = !it.learned;
+                              _selectedLang = lang;
                             });
-                            _save();
-                          }),
-                        ]),
+                          }
+                        },
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+
+          // KẾT THÚC KHUNG
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : currentList.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Chưa có từ ${_selectedLang} nào.'),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () => _addNew(),
+                          child: const Text('Thêm từ mới'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: currentList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) {
+                      final it = currentList[i];
+                      return Dismissible(
+                        key: Key(it.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          padding: const EdgeInsets.only(right: 20),
+                          alignment: Alignment.centerRight,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade400,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (_) => _deleteItem(it),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: it.lang == 'English'
+                                  ? Colors.lightBlue.shade300
+                                  : Colors.pinkAccent.shade200,
+                              foregroundColor: Colors.white,
+                              child: Text(it.lang[0]),
+                            ),
+                            title: Text(
+                              it.word,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(it.meaning),
+                            trailing: Wrap(
+                              spacing: 8,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editItem(it),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    it.learned
+                                        ? Icons.check_circle_rounded
+                                        : Icons.check_circle_outline,
+                                    color: it.learned ? Colors.green : null,
+                                  ),
+                                  onPressed: () {
+                                    final originalIdx = _list.indexWhere(
+                                      (e) => e.id == it.id,
+                                    );
+                                    if (originalIdx >= 0) {
+                                      setState(() {
+                                        _list[originalIdx].learned =
+                                            !_list[originalIdx].learned;
+                                      });
+                                      _save();
+                                    }
+                                  },
+                                ),
+                                // Nút xóa
+                                IconButton(
+                                  tooltip: 'Xóa từ',
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => _deleteItem(it),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNew,
         child: const Icon(Icons.add),
@@ -761,11 +1155,27 @@ class _ManageVocabScreenState extends State<ManageVocabScreen> {
   }
 
   void _addNew() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEditVocabScreen(email: widget.email))).then((_) => _load());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => AddEditVocabScreen(
+              email: widget.email,
+              initialLang: _selectedLang,
+            ),
+          ),
+        )
+        .then((_) => _load());
   }
 
   void _editItem(VocabItem it) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEditVocabScreen(email: widget.email, editing: it))).then((_) => _load());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) =>
+                AddEditVocabScreen(email: widget.email, editing: it),
+          ),
+        )
+        .then((_) => _load());
   }
 }
 
@@ -774,7 +1184,13 @@ class _ManageVocabScreenState extends State<ManageVocabScreen> {
 class AddEditVocabScreen extends StatefulWidget {
   final String email;
   final VocabItem? editing;
-  const AddEditVocabScreen({required this.email, this.editing, super.key});
+  final String initialLang;
+  const AddEditVocabScreen({
+    required this.email,
+    this.editing,
+    this.initialLang = 'English',
+    super.key,
+  });
 
   @override
   State<AddEditVocabScreen> createState() => _AddEditVocabScreenState();
@@ -794,6 +1210,8 @@ class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
       _word = widget.editing!.word;
       _meaning = widget.editing!.meaning;
       _lang = widget.editing!.lang;
+    } else {
+      _lang = widget.initialLang;
     }
   }
 
@@ -804,7 +1222,12 @@ class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
     final list = await LocalStorage.loadVocab(widget.email);
     if (widget.editing == null) {
       final id = DateTime.now().millisecondsSinceEpoch.toString();
-      final item = VocabItem(id: id, word: _word, meaning: _meaning, lang: _lang);
+      final item = VocabItem(
+        id: id,
+        word: _word,
+        meaning: _meaning,
+        lang: _lang,
+      );
       list.add(item);
     } else {
       final idx = list.indexWhere((e) => e.id == widget.editing!.id);
@@ -823,49 +1246,69 @@ class _AddEditVocabScreenState extends State<AddEditVocabScreen> {
   Widget build(BuildContext context) {
     final isEdit = widget.editing != null;
     return Scaffold(
+      backgroundColor: Theme.of(
+        context,
+        // ignore: deprecated_member_use
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
       appBar: AppBar(title: Text(isEdit ? 'Sửa từ' : 'Thêm từ mới')),
       body: Padding(
         padding: const EdgeInsets.all(18),
         child: Card(
           elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Form(
               key: _formKey,
-              child: Column(children: [
-                TextFormField(
-                  initialValue: _word,
-                  decoration: const InputDecoration(labelText: 'Từ (word)'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập từ' : null,
-                  onSaved: (v) => _word = v!.trim(),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  initialValue: _meaning,
-                  decoration: const InputDecoration(labelText: 'Nghĩa (meaning)'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập nghĩa' : null,
-                  onSaved: (v) => _meaning = v!.trim(),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: _lang,
-                  items: const [
-                    DropdownMenuItem(value: 'English', child: Text('English')),
-                    DropdownMenuItem(value: 'Japanese', child: Text('Japanese')),
-                  ],
-                  onChanged: (v) => setState(() => _lang = v!),
-                  decoration: const InputDecoration(labelText: 'Ngôn ngữ'),
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _save,
-                    child: _saving ? const CircularProgressIndicator() : Text(isEdit ? 'Lưu thay đổi' : 'Thêm từ'),
+              child: Column(
+                children: [
+                  TextFormField(
+                    initialValue: _word,
+                    decoration: const InputDecoration(labelText: 'Từ (word)'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Nhập từ' : null,
+                    onSaved: (v) => _word = v!.trim(),
                   ),
-                )
-              ]),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: _meaning,
+                    decoration: const InputDecoration(
+                      labelText: 'Nghĩa (meaning)',
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Nhập nghĩa' : null,
+                    onSaved: (v) => _meaning = v!.trim(),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _lang,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'English',
+                        child: Text('English'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Japanese',
+                        child: Text('Japanese'),
+                      ),
+                    ],
+                    onChanged: (v) => setState(() => _lang = v!),
+                    decoration: const InputDecoration(labelText: 'Ngôn ngữ'),
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : _save,
+                      child: _saving
+                          ? const CircularProgressIndicator()
+                          : Text(isEdit ? 'Lưu thay đổi' : 'Thêm từ'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
