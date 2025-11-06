@@ -30,18 +30,13 @@
 
 ---
 
-## Triển vọng Phát triển (Future Scope)
+## Sơ đồ Use case
 
-Để mở rộng và nâng cao giá trị của ứng dụng, các tính năng sau có thể được xem xét và tích hợp trong tương lai:
+- ![Image](Use case.png)
 
-1.  **Hỗ trợ đa ngôn ngữ chuyên sâu:**
-    * Mở rộng sang các ngôn ngữ khác (ví dụ: Hàn, Trung, Tây Ban Nha).
-    * Tích hợp trường lưu trữ cho **ví dụ câu** hoặc **phát âm** (sử dụng thư viện Text-to-Speech).
-2.  **Nâng cấp Quản lý Dữ liệu:**
-    * Chuyển từ `shared_preferences` sang cơ sở dữ liệu cục bộ mạnh mẽ hơn như **SQLite/Hive/Isar** để xử lý lượng từ vựng lớn hơn và các truy vấn phức tạp hơn.
-    * Thêm chức năng **Nhập/Xuất file CSV** để người dùng dễ dàng di chuyển từ vựng.
-3.  **Cải thiện Thuật toán Ôn tập:**
-    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập dựa trpnj
+## Class diagram
+
+- - ![Image]()
 
 ##  Cấu trúc dự án
 
@@ -71,3 +66,16 @@
     ```bash
     flutter run
     ```
+
+## Triển vọng Phát triển (Future Scope)
+
+Để mở rộng và nâng cao giá trị của ứng dụng, các tính năng sau có thể được xem xét và tích hợp trong tương lai:
+
+1.  **Hỗ trợ đa ngôn ngữ chuyên sâu:**
+    * Mở rộng sang các ngôn ngữ khác (ví dụ: Hàn, Trung, Tây Ban Nha).
+    * Tích hợp trường lưu trữ cho **ví dụ câu** hoặc **phát âm** (sử dụng thư viện Text-to-Speech).
+2.  **Nâng cấp Quản lý Dữ liệu:**
+    * Chuyển từ `shared_preferences` sang cơ sở dữ liệu cục bộ mạnh mẽ hơn như **SQLite/Hive/Isar** để xử lý lượng từ vựng lớn hơn và các truy vấn phức tạp hơn.
+    * Thêm chức năng **Nhập/Xuất file CSV** để người dùng dễ dàng di chuyển từ vựng.
+3.  **Cải thiện Thuật toán Ôn tập:**
+    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập dựa trpnj
