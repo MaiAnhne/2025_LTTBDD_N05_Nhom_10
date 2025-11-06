@@ -60,7 +60,7 @@
 1.  **Clone repository** (Thay thế `[URL_REPOSITORY]` bằng liên kết GitHub ) / **Tải file zip từ github repo**
     ```bash
     git clone [URL_REPOSITORY]
-    cd language_flashcards_app
+    cd 
     ```
 2.  **Tải dependencies:**
     ```bash
@@ -82,4 +82,4 @@
     * Chuyển từ `shared_preferences` sang cơ sở dữ liệu cục bộ mạnh mẽ hơn như **SQLite/Hive/Isar** để xử lý lượng từ vựng lớn hơn và các truy vấn phức tạp hơn.
     * Thêm chức năng **Nhập/Xuất file CSV** để người dùng dễ dàng di chuyển từ vựng.
 3.  **Cải thiện Thuật toán Ôn tập:**
-    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập dựa trpnj
+    * Áp dụng thuật toán lặp lại ngắt quãng (Spaced Repetition System - **SRS**) để tối ưu hóa thời điểm ôn tập.
