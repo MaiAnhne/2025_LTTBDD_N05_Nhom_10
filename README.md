@@ -36,7 +36,7 @@
 
 ## Class diagram
 
-- ![Image]()
+- ![Image](Class.png)
 
 ##  Cấu trúc dự án
 
